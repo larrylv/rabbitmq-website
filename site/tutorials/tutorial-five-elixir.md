@@ -161,12 +161,12 @@ The code for `emit_log_topic.exs`:
     {:ok, channel} = AMQP.Channel.open(connection)
 
     {topic, message} = 
-        System.argv
-        |> case do
-            []            -> {"anonymous.info", "Hello World!"}
-            [message]     -> {"anonymous.info", message}
-            [topic|words] -> {topic, Enum.join(words, " ")}
-        end
+      System.argv
+      |> case do
+        []            -> {"anonymous.info", "Hello World!"}
+        [message]     -> {"anonymous.info", message}
+        [topic|words] -> {topic, Enum.join(words, " ")}
+      end
 
     AMQP.Exchange.declare(channel, "topic_logs", :topic)
 
@@ -179,14 +179,14 @@ The code for `receive_logs_topic.exs`:
 
     :::elixir
     defmodule ReceiveLogsTopic do
-        def wait_for_messages(channel) do
-            receive do
-                {:basic_deliver, payload, meta} ->
-                    IO.puts " [x] Received [#{meta.routing_key}] #{payload}"
+      def wait_for_messages(channel) do
+        receive do
+          {:basic_deliver, payload, meta} ->
+          IO.puts " [x] Received [#{meta.routing_key}] #{payload}"
 						
-                    wait_for_messages(channel)
-            end
+          wait_for_messages(channel)
         end
+      end
     end
 			
     {:ok, connection} = AMQP.Connection.open
@@ -197,11 +197,11 @@ The code for `receive_logs_topic.exs`:
     {:ok, %{queue: queue_name}} = AMQP.Queue.declare(channel, "", exclusive: true)
 
     if length(System.argv) == 0 do
-        IO.puts "Usage: mix run receive_logs_topic.exs [binding_key]..."
-        System.halt(1)
+      IO.puts "Usage: mix run receive_logs_topic.exs [binding_key]..."
+      System.halt(1)
     end
     for binding_key <- System.argv do
-        AMQP.Queue.bind(channel, queue_name, "topic_logs", routing_key: binding_key)
+      AMQP.Queue.bind(channel, queue_name, "topic_logs", routing_key: binding_key)
     end
 
     AMQP.Basic.consume(channel, queue_name, nil, no_ack: true)
